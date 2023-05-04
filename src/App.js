@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Button = ({ operation, onClick }) => {
   return (
@@ -36,13 +36,23 @@ const Input = ({ onChange }) => {
 };
 
 const App = () => {
-  const [result, setResult] = useState(0);
-  const [input1, setInput1] = useState(0);
-  const [input2, setInput2] = useState(0);
+  const [results, setResults] = useState([]);
+  const [inputs, setInputs] = useState({ input1: 0, input2: 0 });
+
+  useEffect(() => {
+    var results = localStorage.getItem("results");
+    if (results) {
+      setResults(JSON.parse(results));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("results", JSON.stringify(results));
+  }, [results]);
 
   const handleOperationClick = (operator) => {
-    const value1 = input1;
-    const value2 = input2;
+    const value1 = inputs.input1;
+    const value2 = inputs.input2;
     let result = 0;
 
     if (operator === "+") {
@@ -55,16 +65,14 @@ const App = () => {
       result = value1 / value2;
     }
 
-    setResult(result);
+    setResults([...results, result]);
   };
 
   const handleInputChange = (e, inputNumber) => {
     const value = Number(e.target.value);
-    if (inputNumber === 1) {
-      setInput1(value);
-    } else if (inputNumber === 2) {
-      setInput2(value);
-    }
+    setInputs((prevInputs) => {
+      return { ...prevInputs, [`input${inputNumber}`]: value };
+    });
   };
 
   return (
@@ -93,7 +101,15 @@ const App = () => {
           style={{ flex: 1 }}
         />
       </div>
-      <p style={{ fontWeight: "bold" }}>Result: {result}</p>
+      <p style={{ fontWeight: "bold" }}>
+        Resultado: {results[results.length - 1]}
+      </p>
+      <h3>Ùltimos resultados</h3>
+      <ul>
+        {results.map((result) => (
+          <li key={result}>{result}</li>
+        ))}
+      </ul>
     </div>
   );
 };
